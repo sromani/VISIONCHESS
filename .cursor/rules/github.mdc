@@ -1,0 +1,10 @@
+---
+description: GitHub owner and repo defaults for VisionChess
+alwaysApply: true
+---
+
+# GitHub
+
+- GitHub username: **sromani**
+- Default repo URL: `https://github.com/sromani/VISIONCHESS`
+- Use `gh` CLI and `git remote` with this owner unless the user specifies otherwise

@@ -74,7 +74,7 @@ VISIONCHESS/
 ### 1. Clone and configure
 
 ```bash
-git clone https://github.com/YOUR_USER/VISIONCHESS.git
+git clone https://github.com/sromani/VISIONCHESS.git
 cd VISIONCHESS
 cp .env.example .env
 cp apps/web/.env.local.example apps/web/.env.local
