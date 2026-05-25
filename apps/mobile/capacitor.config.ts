@@ -6,16 +6,20 @@ const config: Config = {
   webDir: "dist",
   bundledWebRuntime: false,
   server: {
+    /** https://localhost — required for ORT wasm fetch on iOS/Android WKWebView */
     androidScheme: "https",
+    iosScheme: "https",
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
-      launchShowDuration: 2000,
+      launchAutoHide: false,
+      launchShowDuration: 0,
       backgroundColor: "#09090b",
       androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_CROP",
+      androidScaleType: "FIT_XY",
       showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: "DARK",

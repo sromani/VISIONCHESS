@@ -1,0 +1,13 @@
+IMPORTANTE — iOS / Xcode
+
+Abre SOLO este archivo (doble clic):
+
+  App.xcworkspace
+
+NO abras App.xcodeproj. Si abres el .xcodeproj verás:
+  "No such module 'Capacitor'"
+
+Desde terminal (recomendado):
+
+  cd apps/mobile
+  npm run cap:open:ios

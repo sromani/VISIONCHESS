@@ -1,0 +1,32 @@
+{
+  "source": "nakst_yolov8m",
+  "model_type": "yolo_detector",
+  "image_size": 640,
+  "num_classes": 13,
+  "class_names": [
+    "board",
+    "white_king",
+    "white_queen",
+    "white_rook",
+    "white_bishop",
+    "white_knight",
+    "white_pawn",
+    "black_king",
+    "black_queen",
+    "black_rook",
+    "black_bishop",
+    "black_knight",
+    "black_pawn"
+  ],
+  "input_name": "images",
+  "output_name": "output0",
+  "skip_classes": ["board"],
+  "localization_only": true,
+  "board_class_index": 0,
+  "coords_normalized": true,
+  "conf_threshold": 0.30,
+  "iou_threshold": 0.45,
+  "max_box_ratio": 0.32,
+  "min_box_px": 18,
+  "preprocess": "yolo_rgb_640"
+}

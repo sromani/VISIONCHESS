@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     debug: bool = False
 
     api_prefix: str = "/api/v1"
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = (
+        "http://localhost:3000,http://127.0.0.1:3000,"
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "capacitor://localhost,ionic://localhost,http://localhost"
+    )
 
     # Upload / storage
     storage_path: Path = Field(default=API_ROOT / "uploads")

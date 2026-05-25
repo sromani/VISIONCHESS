@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Baseline tests — digital boards (ideal cases)",
+  "baselineMode": "stable_v1",
+  "images": ["chess-app-blue.png", "chessvision-synthetic.png"]
+}

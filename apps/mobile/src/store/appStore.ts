@@ -5,13 +5,16 @@ import {
   createHistoryEntryAfterMove,
   createInitialHistoryEntry,
   HistoryEntry,
+  isLegalFen,
   PromotionPiece,
+  tryCreateGame,
   setActiveColorInFen,
   setCastlingRightsInFen,
   tryMove,
   type CastlingRights,
 } from "@/lib/chess/game";
 import type { Color } from "chess.js";
+import { buildFen, detectionsFromSquares } from "@/lib/chess/detections";
 import { runVisionPipeline } from "@/lib/pipeline";
 import { createImagePreview } from "@/lib/storage/imagePreview";
 import { createStubDetection } from "@/lib/storage/loadBoardSnapshot";
@@ -57,6 +60,8 @@ interface AppStore {
   currentSnapshotId: string | null;
 
   upload: (file: File) => Promise<void>;
+  /** Build FEN from last detection squares and enable interactive board if legal. */
+  confirmDetectedPosition: () => boolean;
   setFen: (fen: string) => void;
   flipBoard: () => void;
   reset: () => void;
@@ -233,31 +238,36 @@ export const useAppStore = create<AppStore>((set, get) => ({
     });
 
     try {
-      const { detection } = await runVisionPipeline(file, (step) => {
+      const pipelineResult = await runVisionPipeline(file, (step) => {
         set((state) => ({
           pipelineSteps: updateStep(state.pipelineSteps, step),
           phase: phaseForStep(step),
         }));
       });
 
+      const detection = pipelineResult.detection;
+
       const interactiveFen = detection.interactiveFen;
-      const startFen = interactiveFen ?? detection.fen ?? "";
+      const startFen = interactiveFen ?? "";
+      const canPlay = Boolean(detection.boardReady && startFen && isLegalFen(startFen));
       const imagePreview = await createImagePreview(file);
 
       set({
         phase: "ready",
-        detection,
+        detection: canPlay
+          ? detection
+          : { ...detection, boardReady: false, interactiveFen: null },
         analysis: null,
         analysisLoading: false,
-        boardReady: detection.boardReady,
-        initialBoardFen: interactiveFen,
-        ...(startFen && detection.boardReady
+        boardReady: canPlay,
+        initialBoardFen: canPlay ? startFen : null,
+        ...(canPlay
           ? initHistory(startFen)
-          : { fen: startFen, ...emptyHistoryState() }),
+          : { fen: detection.fen ?? "", ...emptyHistoryState() }),
         pipelineSteps: completeSteps(get().pipelineSteps),
       });
 
-      if (detection.boardReady && startFen) {
+      if (canPlay) {
         autoSaveBoard(get, set, {
           fen: startFen,
           imagePreview,
@@ -270,6 +280,44 @@ export const useAppStore = create<AppStore>((set, get) => ({
         phase: "error",
         error: err instanceof Error ? err.message : "Something went wrong processing your image.",
       });
+    }
+  },
+
+  confirmDetectedPosition: () => {
+    const { detection } = get();
+    if (!detection?.squares?.length) {
+      set({ error: "No detected squares to confirm." });
+      return false;
+    }
+    try {
+      const dets = detectionsFromSquares(detection.squares);
+      const fen = buildFen(dets, {
+        orientation: detection.orientation === "black" ? "black" : "white",
+      });
+      createGame(fen);
+      const historyState = initHistory(fen);
+      set({
+        error: null,
+        ...historyState,
+        boardReady: true,
+        phase: "ready",
+        initialBoardFen: fen,
+        detection: {
+          ...detection,
+          interactiveFen: fen,
+          fen: fen.split(" ")[0],
+          boardReady: true,
+          fenValid: true,
+        },
+      });
+      autoSaveBoard(get, set, { fen, newSnapshot: true });
+      return true;
+    } catch {
+      set({
+        error:
+          "Could not build a legal position. Try starting position or scan a clearer photo.",
+      });
+      return false;
     }
   },
 
@@ -379,7 +427,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
     if (!current) return;
 
     try {
-      if (createGame(current.fen).turn() === turn) return;
+      const currentGame = tryCreateGame(current.fen);
+      if (!currentGame || currentGame.turn() === turn) return;
 
       const nextFen = setActiveColorInFen(current.fen, turn);
       const entry = createInitialHistoryEntry(nextFen);

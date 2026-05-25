@@ -78,12 +78,30 @@ function moveTargetStyle(move: Move): Record<string, string> {
   };
 }
 
+/** Load FEN without throwing (use in UI / previews). */
+export function tryCreateGame(fen: string): Chess | null {
+  if (!fen?.trim()) return null;
+  try {
+    return new Chess(fen);
+  } catch {
+    return null;
+  }
+}
+
+export function isLegalFen(fen: string): boolean {
+  return tryCreateGame(fen) != null;
+}
+
 export function createGame(fen: string): Chess {
-  return new Chess(fen);
+  const game = tryCreateGame(fen);
+  if (!game) {
+    throw new Error(`Invalid FEN: ${fen.trim().split(/\s+/)[0] ?? fen}`);
+  }
+  return game;
 }
 
 export function getActiveColor(fen: string): Color {
-  return createGame(fen).turn();
+  return tryCreateGame(fen)?.turn() ?? "w";
 }
 
 export function parseCastlingRights(fen: string): CastlingRights {
@@ -111,7 +129,8 @@ export function castlingRightsToFenField(rights: CastlingRights): string {
 /** Max castling rights allowed by current king/rook placement (chess.js board). */
 export function inferCastlingRights(fen: string): CastlingRights {
   const placement = fen.trim().split(/\s+/)[0];
-  const game = createGame(`${placement} w - - 0 1`);
+  const game = tryCreateGame(`${placement} w - - 0 1`);
+  if (!game) return { ...EMPTY_CASTLING_RIGHTS };
 
   const wKing = game.get("e1");
   const wRookH = game.get("h1");
@@ -150,7 +169,9 @@ export function patchFen(
   const parts = ensureFullFenParts(fen.trim().split(/\s+/));
   if (patch.turn) parts[1] = patch.turn;
   if (patch.castling) parts[2] = castlingRightsToFenField(patch.castling);
-  return createGame(parts.join(" ")).fen();
+  const game = tryCreateGame(parts.join(" "));
+  if (!game) throw new Error("Invalid FEN");
+  return game.fen();
 }
 
 /** Replace the active-color field in FEN and re-validate via chess.js. */
@@ -163,7 +184,8 @@ export function setCastlingRightsInFen(fen: string, castling: CastlingRights): s
 }
 
 export function createInitialHistoryEntry(fen: string): HistoryEntry {
-  const game = createGame(fen);
+  const game = tryCreateGame(fen);
+  if (!game) throw new Error("Invalid FEN");
   return {
     move: null,
     fen: game.fen(),
@@ -186,7 +208,8 @@ function moveToHistoryMove(move: Move): HistoryMove {
 }
 
 export function createHistoryEntryAfterMove(fen: string, move: Move): HistoryEntry {
-  const game = createGame(fen);
+  const game = tryCreateGame(fen);
+  if (!game) throw new Error("Invalid FEN");
   return {
     move: moveToHistoryMove(move),
     fen: game.fen(),
@@ -260,8 +283,9 @@ export function buildSquareStyles(
   return styles;
 }
 
-export function getGameStatus(fen: string): GameStatus {
-  const game = createGame(fen);
+export function getGameStatus(fen: string): GameStatus | null {
+  const game = tryCreateGame(fen);
+  if (!game) return null;
   const turn = game.turn();
 
   return {

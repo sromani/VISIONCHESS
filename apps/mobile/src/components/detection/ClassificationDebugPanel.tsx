@@ -31,7 +31,14 @@ export function ClassificationDebugPanel({
       })),
     );
     const boardOrientation = orientation === "flipped" ? "black" : "white";
-    const resolvedFen = fen ?? buildFen(detections, { orientation: boardOrientation });
+    let resolvedFen = fen;
+    if (!resolvedFen) {
+      try {
+        resolvedFen = buildFen(detections, { orientation: boardOrientation });
+      } catch {
+        resolvedFen = undefined;
+      }
+    }
     const highlightSquares = new Set(lowConfidenceSquares(detections));
 
     return (
@@ -64,7 +71,9 @@ export function ClassificationDebugPanel({
           </figure>
         </div>
 
-        <p className="font-mono text-[11px] text-muted">{resolvedFen.split(" ")[0]}</p>
+        {resolvedFen && (
+          <p className="font-mono text-[11px] text-muted">{resolvedFen.split(" ")[0]}</p>
+        )}
       </section>
     );
   }

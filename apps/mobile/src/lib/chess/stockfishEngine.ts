@@ -36,6 +36,11 @@ export class StockfishEngine {
   private activeGeneration = 0;
   private configuredMultiPv = 1;
 
+  /** Warm up UCI worker (call during app bootstrap). */
+  prepare(): Promise<void> {
+    return this.ensureReady();
+  }
+
   private ensureReady(): Promise<void> {
     if (this.initPromise) return this.initPromise;
 
@@ -189,6 +194,10 @@ export function getStockfishEngine(): StockfishEngine {
     engineSingleton = new StockfishEngine();
   }
   return engineSingleton;
+}
+
+export function prepareStockfishEngine(): Promise<void> {
+  return getStockfishEngine().prepare();
 }
 
 export async function analyzePosition(

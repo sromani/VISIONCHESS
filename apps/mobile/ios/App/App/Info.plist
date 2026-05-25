@@ -45,5 +45,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>VisionChess needs the camera to photograph chess boards for analysis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>VisionChess needs access to your photo library to select board images for analysis.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>VisionChess needs permission to save analyzed board photos to your library.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

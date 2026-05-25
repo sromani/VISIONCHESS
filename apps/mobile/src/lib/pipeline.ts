@@ -1,6 +1,7 @@
-import { OFFLINE_MODE } from "@/lib/config";
+import { USE_REMOTE_VISION, VISION_LOCAL } from "@/lib/config";
 import { detectBoard } from "@/lib/api/detectBoard";
 import { ApiError } from "@/lib/api/client";
+import { detectBoardLocal } from "@/vision/detectBoardLocal";
 import { createImagePreview } from "@/lib/storage/imagePreview";
 import type { DetectionResult } from "@/types";
 
@@ -11,19 +12,34 @@ export type ProgressCallback = (
 const START_FEN =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+export type VisionPipelineResult =
+  | { mode: "remote"; detection: DetectionResult }
+  | { mode: "local"; detection: DetectionResult }
+  | { mode: "offline_stub"; detection: DetectionResult };
+
 export async function runVisionPipeline(
   file: File,
   onProgress?: ProgressCallback,
-): Promise<{ detection: DetectionResult }> {
+): Promise<VisionPipelineResult> {
   const originalUrl = URL.createObjectURL(file);
-
   onProgress?.("upload");
 
-  if (!OFFLINE_MODE) {
-    return runRemotePipeline(file, originalUrl, onProgress);
+  if (VISION_LOCAL) {
+    onProgress?.("detect");
+    const detection = await detectBoardLocal(file);
+    onProgress?.("classify");
+    onProgress?.("validate");
+    onProgress?.("analyze");
+    return { mode: "local", detection };
   }
 
-  return runOfflinePipeline(file, originalUrl, onProgress);
+  if (USE_REMOTE_VISION) {
+    const { detection } = await runRemotePipeline(file, originalUrl, onProgress);
+    return { mode: "remote", detection };
+  }
+
+  const { detection } = await runOfflineStubPipeline(file, originalUrl, onProgress);
+  return { mode: "offline_stub", detection };
 }
 
 async function runRemotePipeline(
@@ -53,8 +69,7 @@ async function runRemotePipeline(
   return { detection };
 }
 
-/** Offline placeholder — Phase 4 will swap in OpenCV/YOLO workers. */
-async function runOfflinePipeline(
+async function runOfflineStubPipeline(
   file: File,
   originalUrl: string,
   onProgress?: ProgressCallback,
@@ -67,7 +82,6 @@ async function runOfflinePipeline(
   await pause(180);
 
   const preview = (await createImagePreview(file)) ?? originalUrl;
-
   onProgress?.("analyze");
 
   const detection: DetectionResult = {
@@ -91,7 +105,7 @@ async function runOfflinePipeline(
     metadata: {
       offline: true,
       visionPending: true,
-      note: "On-device board detection (OpenCV + YOLO) will replace this stub.",
+      note: "Enable VITE_VISION_LOCAL=true for on-device YOLO.",
     },
   };
 

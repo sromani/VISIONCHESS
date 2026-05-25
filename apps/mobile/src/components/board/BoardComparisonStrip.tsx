@@ -49,7 +49,14 @@ export function BoardComparisonStrip({
     () => new Set(lowConfidenceSquares(detections)),
     [detections],
   );
-  const resolvedFen = fen ?? buildFen(detections, { orientation });
+  const resolvedFen = useMemo(() => {
+    if (fen) return fen;
+    try {
+      return buildFen(detections, { orientation });
+    } catch {
+      return undefined;
+    }
+  }, [fen, detections, orientation]);
 
   return (
     <section className="space-y-3">
@@ -89,9 +96,11 @@ export function BoardComparisonStrip({
         </ComparisonFrame>
       </div>
 
-      <p className="font-mono text-[11px] text-muted">
-        FEN placement: <span className="text-foreground">{resolvedFen.split(" ")[0]}</span>
-      </p>
+      {resolvedFen && (
+        <p className="font-mono text-[11px] text-muted">
+          FEN placement: <span className="text-foreground">{resolvedFen.split(" ")[0]}</span>
+        </p>
+      )}
     </section>
   );
 }

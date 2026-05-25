@@ -6,6 +6,7 @@ interface CaptureActionsProps {
   onGallery: () => void;
   onStartPosition: () => void;
   offline?: boolean;
+  visionLocal?: boolean;
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export function CaptureActions({
   onGallery,
   onStartPosition,
   offline = true,
+  visionLocal = false,
   className,
 }: CaptureActionsProps) {
   return (
@@ -27,7 +29,12 @@ export function CaptureActions({
       <Button size="lg" variant="ghost" className="touch-target w-full" onClick={onStartPosition}>
         Start from initial position
       </Button>
-      {offline && (
+      {visionLocal && (
+        <p className="text-center text-xs leading-relaxed text-muted">
+          Offline LC2FEN-style geometry + YOLO → FEN. First scan loads models (~100 MB); allow a few seconds.
+        </p>
+      )}
+      {offline && !visionLocal && (
         <p className="text-center text-xs leading-relaxed text-muted">
           Runs fully offline. Board scan from photo uses on-device vision (Phase 4). Analysis with
           Stockfish is local.

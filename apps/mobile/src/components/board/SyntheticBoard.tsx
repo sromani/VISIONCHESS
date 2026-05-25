@@ -47,10 +47,14 @@ export function SyntheticBoard({
   const [pieceSet, setPieceSet] = useState<PieceSetId>("cburnett");
   const [highlightsOn, setHighlightsOn] = useState(showHighlights);
 
-  const computedFen = useMemo(
-    () => (detections?.length ? buildFen(detections, { orientation }) : undefined),
-    [detections, orientation],
-  );
+  const computedFen = useMemo(() => {
+    if (!detections?.length) return undefined;
+    try {
+      return buildFen(detections, { orientation });
+    } catch {
+      return undefined;
+    }
+  }, [detections, orientation]);
   const fen = fenOverride ?? computedFen ?? "8/8/8/8/8/8/8/8 w - - 0 1";
   const placement = fenPlacement(fen);
 

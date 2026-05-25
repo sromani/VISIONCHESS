@@ -1,4 +1,8 @@
-import { castlingRightsToFenField, inferCastlingRights } from "@/lib/chess/game";
+import {
+  castlingRightsToFenField,
+  inferCastlingRights,
+  isLegalFen,
+} from "@/lib/chess/game";
 
 export type BoardOrientation = "white" | "black";
 
@@ -64,15 +68,15 @@ export function detectionsFromSquares(
   squares: {
     squareName?: string;
     name?: string;
-    label: string;
-    confidence: number;
+    label?: string;
+    confidence?: number;
     occupied?: boolean;
   }[],
 ): PieceDetection[] {
   return squares.map((sq) => ({
     square: sq.squareName ?? sq.name ?? "",
-    piece: sq.occupied === false ? "empty" : sq.label,
-    confidence: sq.confidence,
+    piece: sq.occupied === false ? "empty" : (sq.label ?? "empty"),
+    confidence: sq.confidence ?? 0,
     occupied: sq.occupied,
   }));
 }
@@ -118,7 +122,23 @@ export function buildFen(
   const castling = castlingRightsToFenField(
     inferCastlingRights(`${placement} ${active} - - 0 1`),
   );
-  return `${placement} ${active} ${castling} - 0 1`;
+  const fen = `${placement} ${active} ${castling} - 0 1`;
+  if (!isLegalFen(fen)) {
+    throw new Error("Invalid FEN: missing kings or illegal placement");
+  }
+  return fen;
+}
+
+/** Like buildFen but returns null when placement is not loadable (e.g. missing kings). */
+export function tryBuildFen(
+  detections: PieceDetection[],
+  options?: { activeColor?: "w" | "b"; orientation?: BoardOrientation },
+): string | null {
+  try {
+    return buildFen(detections, options);
+  } catch {
+    return null;
+  }
 }
 
 function inferActiveColor(detections: PieceDetection[]): "w" | "b" {

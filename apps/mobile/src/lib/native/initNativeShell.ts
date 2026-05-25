@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
-import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 
+/** Status bar on launch. Splash is hidden from App after the WebView is ready. */
 export async function initNativeShell(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
 
@@ -10,11 +10,5 @@ export async function initNativeShell(): Promise<void> {
     await StatusBar.setBackgroundColor({ color: "#09090b" });
   } catch {
     /* web preview */
-  }
-
-  try {
-    await SplashScreen.hide();
-  } catch {
-    /* optional */
   }
 }

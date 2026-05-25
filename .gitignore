@@ -29,6 +29,7 @@ out/
 
 # Vite / Capacitor web build
 apps/mobile/dist/
+apps/mobile/debug_failures/
 apps/web/.next/
 
 # Stockfish assets (copied on npm postinstall)
@@ -44,6 +45,7 @@ apps/mobile/public/stockfish.wasm.js
 .env.*
 !.env.example
 !**/.env.example
+!**/.env.*.example
 !**/.env.local.example
 apps/web/.env.local
 
@@ -67,7 +69,12 @@ logs/
 screenshots/
 !docs/screenshots/
 !docs/screenshots/**
-debug/
+# Repo-root scratch only — not apps/mobile/src/debug/web (CV lab)
+/debug/
+
+# Mobile vision binaries (npm run copy:vision-assets — see apps/mobile/README.md)
+apps/mobile/public/models/*.onnx
+apps/mobile/public/ort/
 
 # ── Benchmark artifacts ──────────────────────────────
 benchmark/_tmp*/

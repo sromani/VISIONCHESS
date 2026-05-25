@@ -67,22 +67,29 @@ npm run cap:sync
 npm run cap:open:ios
 ```
 
-## Offline mode
+## Offline (default on iPhone)
 
-Default: **no remote API**. The app:
+| Feature | On device, no Wi‑Fi |
+|---------|---------------------|
+| Stockfish analysis | Yes |
+| Interactive board + moves | Yes |
+| Enter FEN / start position | Yes |
+| Saved boards | Yes |
+| Photo → FEN | **Not yet** (on-device vision planned) |
 
-1. Runs Stockfish locally for all analysis
-2. Saves boards to localStorage
-3. Uses a vision **stub** (starting position) when scanning photos until on-device WASM ships
+The default build has **no** `VITE_API_URL` — nothing calls your Mac.
 
-Optional dev API:
+### Optional: photo scan via dev API (not offline)
 
-```env
-# apps/mobile/.env
-VITE_API_URL=http://10.0.2.2:8001/api/v1
+Only for development if you want camera → FEN before on-device vision ships:
+
+```bash
+cd apps/mobile
+npm run setup:api-env && npm run cap:sync
+# API on Mac: uvicorn main:app --host 0.0.0.0 --port 8001
 ```
 
-(`10.0.2.2` = host machine from Android emulator)
+To return to pure offline, delete `apps/mobile/.env` and run `npm run cap:sync` again.
 
 ## Git handling
 

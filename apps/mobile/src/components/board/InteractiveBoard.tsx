@@ -8,7 +8,7 @@ import type { Square as ChessSquare } from "chess.js";
 import { Button } from "@/components/ui/Button";
 import {
   buildSquareStyles,
-  createGame,
+  tryCreateGame,
   findLegalMove,
   getPromotionMoves,
   isSquareSelectable,
@@ -18,7 +18,6 @@ import {
 } from "@/lib/chess/game";
 import { buildCustomPieces, LICHESS_BOARD } from "@/lib/chess/pieceSets";
 import { buildEngineArrows, type BoardArrow, ENGINE_SQUARE_BEST_GLOW, ENGINE_SQUARE_BEST_GLOW_SHADOW, ENGINE_SQUARE_HOVER_FROM, ENGINE_SQUARE_HOVER_TO } from "@/lib/chess/engineArrows";
-import { DEV_MODE } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { selectIsAtLatestMove, useAppStore } from "@/store/appStore";
 
@@ -39,7 +38,6 @@ export function InteractiveBoard({
   engineHighlight?: Pick<EngineLine, "from" | "to"> | null;
 }) {
   const boardReady = useAppStore((s) => s.boardReady);
-  const detection = useAppStore((s) => s.detection);
   const orientation = useAppStore((s) => s.orientation);
   const history = useAppStore((s) => s.history);
   const currentMoveIndex = useAppStore((s) => s.currentMoveIndex);
@@ -64,7 +62,7 @@ export function InteractiveBoard({
 
   const customPieces = useMemo(() => buildCustomPieces("cburnett"), []);
 
-  const game = useMemo(() => (boardFen ? createGame(boardFen) : null), [boardFen]);
+  const game = useMemo(() => (boardFen ? tryCreateGame(boardFen) : null), [boardFen]);
 
   const promotionOptions = useMemo(() => {
     if (!game || !promotionSquares || !isAtLatest) return [] as PromotionPiece[];
@@ -199,16 +197,6 @@ export function InteractiveBoard({
   );
 
   if (!boardReady || !boardFen || !game || !currentEntry) {
-    if (DEV_MODE) {
-      return (
-        <div className="w-full max-w-[min(100%,560px)] rounded-2xl border border-dashed border-border bg-card/40 px-6 py-12 text-center">
-          <p className="text-sm font-medium text-foreground">Board not available</p>
-          {detection && !detection.boardReady && (
-            <p className="mt-2 text-xs text-amber-500/90">FEN validation failed</p>
-          )}
-        </div>
-      );
-    }
     return null;
   }
 
