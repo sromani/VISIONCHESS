@@ -73,6 +73,8 @@ debug/
 benchmark/_tmp*/
 benchmark/results/
 benchmark/__MACOSX/
+**/__MACOSX/
+**/.DS_Store
 
 # ── Android (Capacitor) ───────────────────────────────
 apps/mobile/android/.gradle/
