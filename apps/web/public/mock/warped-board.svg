@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <rect width="800" height="800" fill="#312e2b"/>
+  <g>
+    <rect x="0" y="0" width="100" height="100" fill="#ebecd0"/>
+    <rect x="200" y="0" width="100" height="100" fill="#ebecd0"/>
+    <rect x="400" y="0" width="100" height="100" fill="#ebecd0"/>
+    <rect x="600" y="0" width="100" height="100" fill="#ebecd0"/>
+    <rect x="100" y="100" width="100" height="100" fill="#ebecd0"/>
+    <rect x="300" y="100" width="100" height="100" fill="#ebecd0"/>
+    <rect x="500" y="100" width="100" height="100" fill="#ebecd0"/>
+    <rect x="700" y="100" width="100" height="100" fill="#ebecd0"/>
+  </g>
+  <g fill="#779556">
+    <rect x="100" y="0" width="100" height="100"/>
+    <rect x="300" y="0" width="100" height="100"/>
+    <rect x="500" y="0" width="100" height="100"/>
+    <rect x="700" y="0" width="100" height="100"/>
+    <rect x="0" y="100" width="100" height="100"/>
+    <rect x="200" y="100" width="100" height="100"/>
+    <rect x="400" y="100" width="100" height="100"/>
+    <rect x="600" y="100" width="100" height="100"/>
+  </g>
+  <!-- simplified pattern repeat for demo -->
+  <g opacity="0.95">
+    <text x="400" y="420" text-anchor="middle" fill="#ffffff55" font-family="system-ui" font-size="14">Mock warped board</text>
+  </g>
+  <!-- pieces hint -->
+  <circle cx="400" cy="400" r="28" fill="#fff" opacity="0.15"/>
+</svg>

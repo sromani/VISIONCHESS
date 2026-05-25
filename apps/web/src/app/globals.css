@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 250 250 250;
+  --foreground: 9 9 11;
+  --muted: 113 113 122;
+  --border: 228 228 231;
+  --card: 255 255 255;
+  --card-hover: 244 244 245;
+  --accent: 22 163 74;
+  --accent-soft: 220 252 231;
+  --sidebar: 250 250 250;
+}
+
+.dark {
+  --background: 9 9 11;
+  --foreground: 250 250 250;
+  --muted: 161 161 170;
+  --border: 39 39 42;
+  --card: 24 24 27;
+  --card-hover: 39 39 42;
+  --accent: 74 222 128;
+  --accent-soft: 20 83 45;
+  --sidebar: 12 12 14;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-border bg-card/80 backdrop-blur-xl;
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--card)) 0%,
+      rgb(var(--card-hover)) 50%,
+      rgb(var(--card)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out forwards;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-in-out infinite;
+}
