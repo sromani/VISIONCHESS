@@ -5,6 +5,8 @@ import { EngineArrowsControls } from "@/components/analysis/EngineArrowsControls
 import { InteractiveBoard } from "@/components/board/InteractiveBoard";
 import { PendingPositionBoard } from "@/components/board/PendingPositionBoard";
 import { BoardCropPreview } from "@/components/vision/BoardCropPreview";
+import { ScanResultBoards } from "@/components/detection/ScanResultBoards";
+import { detectionHasPieces } from "@/lib/chess/detections";
 import { useStockfishAnalysis } from "@/hooks/useStockfishAnalysis";
 import { selectIsAtLatestMove, useAppStore } from "@/store/appStore";
 import type { EngineLine } from "@/types";
@@ -47,10 +49,14 @@ export function AnalysisBoardSection({
     );
   }
 
-  if (!boardReady) {
-    if (detection) {
-      return <PendingPositionBoard detection={detection} />;
+  if (!boardReady && detection) {
+    if (detection.metadata?.geometryOnly === true || detectionHasPieces(detection)) {
+      return <ScanResultBoards detection={detection} />;
     }
+    return <PendingPositionBoard detection={detection} />;
+  }
+
+  if (!boardReady) {
     return (
       <div className="w-full max-w-[min(100%,560px)] rounded-2xl border border-dashed border-border px-6 py-10 text-center text-sm text-muted">
         Board preview unavailable.

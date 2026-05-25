@@ -1,0 +1,25 @@
+{
+  "name": "@visionchess/offline",
+  "version": "0.1.0",
+  "description": "Capacitor plugin — offline LC2FEN geometry + YOLO ONNX on iOS",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": ["dist/", "ios/", "VisionchessOffline.podspec"],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.2.0",
+    "typescript": "~5.7.2"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  }
+}

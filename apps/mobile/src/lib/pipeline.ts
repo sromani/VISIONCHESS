@@ -1,16 +1,18 @@
-import { USE_REMOTE_VISION, VISION_LOCAL } from "@/lib/config";
+import { API_BASE, LOCAL_GEOMETRY_FIRST, OFFLINE_MODE, USE_REMOTE_VISION, VISION_LOCAL } from "@/lib/config";
 import { detectBoard } from "@/lib/api/detectBoard";
 import { ApiError } from "@/lib/api/client";
 import { detectBoardLocal } from "@/vision/detectBoardLocal";
-import { createImagePreview } from "@/lib/storage/imagePreview";
+import { recognizePiecesNative } from "@/lib/vision/offlineYolo/nativeBridge";
+import { rectifyBoardFromFile } from "@/lib/vision/offlineBoardGeometry";
 import type { DetectionResult } from "@/types";
+
+export const START_FEN =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export type ProgressCallback = (
   step: "upload" | "detect" | "classify" | "validate" | "analyze",
+  detail?: string,
 ) => void;
-
-const START_FEN =
-  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export type VisionPipelineResult =
   | { mode: "remote"; detection: DetectionResult }
@@ -34,11 +36,15 @@ export async function runVisionPipeline(
   }
 
   if (USE_REMOTE_VISION) {
-    const { detection } = await runRemotePipeline(file, originalUrl, onProgress);
+    if (!LOCAL_GEOMETRY_FIRST) {
+      const { detection } = await runRemotePipeline(file, originalUrl, onProgress);
+      return { mode: "remote", detection };
+    }
+    const { detection } = await runLocalGeometryPipeline(file, originalUrl, onProgress);
     return { mode: "remote", detection };
   }
 
-  const { detection } = await runOfflineStubPipeline(file, originalUrl, onProgress);
+  const { detection } = await runLocalGeometryPipeline(file, originalUrl, onProgress);
   return { mode: "offline_stub", detection };
 }
 
@@ -69,51 +75,92 @@ async function runRemotePipeline(
   return { detection };
 }
 
-async function runOfflineStubPipeline(
+/** M1: canvas_fast warp → native iOS YOLO (offline) or hybrid API for pieces. */
+async function runLocalGeometryPipeline(
   file: File,
   originalUrl: string,
   onProgress?: ProgressCallback,
 ): Promise<{ detection: DetectionResult }> {
-  onProgress?.("detect");
-  await pause(280);
-  onProgress?.("classify");
-  await pause(220);
-  onProgress?.("validate");
-  await pause(180);
+  onProgress?.("detect", "Detecting board edges…");
 
-  const preview = (await createImagePreview(file)) ?? originalUrl;
-  onProgress?.("analyze");
+  const geo = await rectifyBoardFromFile(file);
 
-  const detection: DetectionResult = {
+  const nativeDetection = await recognizePiecesNative(geo, originalUrl);
+  if (nativeDetection) {
+    onProgress?.("classify");
+    onProgress?.("validate");
+    onProgress?.("analyze");
+    return { detection: nativeDetection };
+  }
+
+  let detection: DetectionResult = {
     jobId: `offline-${Date.now()}`,
-    confidence: 0,
+    confidence: geo.confidence,
     originalUrl,
-    warpedUrl: preview,
-    overlayUrl: preview,
-    corners: [],
-    fen: START_FEN,
-    interactiveFen: START_FEN,
-    fenValid: true,
-    boardReady: true,
-    orientation: "white",
-    originalWidth: 0,
-    originalHeight: 0,
-    outputWidth: 0,
-    outputHeight: 0,
+    warpedUrl: geo.warpedUrl,
+    overlayUrl: geo.debug.rectifiedGrid ?? geo.warpedUrl,
+    corners: geo.corners,
+    fen: "",
+    interactiveFen: null,
+    fenValid: false,
+    boardReady: false,
+    orientation: "standard",
+    originalWidth: geo.originalWidth,
+    originalHeight: geo.originalHeight,
+    outputWidth: geo.outputWidth,
+    outputHeight: geo.outputHeight,
     squares: [],
-    processingMs: 0,
-    metadata: {
-      offline: true,
-      visionPending: true,
-      note: "Enable VITE_VISION_LOCAL=true for on-device YOLO.",
-    },
+    processingMs: geo.processingMs,
+    debug: geo.debug,
+    metadata: geo.metadata,
   };
 
+  if (API_BASE && !OFFLINE_MODE) {
+    onProgress?.("classify", "Detecting pieces (YOLO)…");
+    try {
+      const apiDetection = await detectBoard(file, originalUrl, "/detect-lc2fen");
+      detection = mergeLocalGeometryWithApi(geo, apiDetection, originalUrl);
+      onProgress?.("validate");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Piece detection failed";
+      detection = {
+        ...detection,
+        metadata: {
+          ...detection.metadata,
+          piece_detection_error: message,
+        },
+      };
+    }
+  }
+
+  onProgress?.("analyze");
   return { detection };
 }
 
-function pause(ms: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+function mergeLocalGeometryWithApi(
+  geo: Awaited<ReturnType<typeof rectifyBoardFromFile>>,
+  api: DetectionResult,
+  originalUrl: string,
+): DetectionResult {
+  return {
+    ...api,
+    originalUrl,
+    warpedUrl: geo.warpedUrl,
+    overlayUrl: geo.debug.rectifiedGrid ?? api.overlayUrl,
+    corners: geo.corners.length >= 4 ? geo.corners : api.corners,
+    debug: {
+      ...api.debug,
+      ...geo.debug,
+      rectifiedBoard: geo.debug.rectifiedBoard ?? api.debug?.rectifiedBoard,
+      rectifiedGrid: geo.debug.rectifiedGrid ?? api.debug?.rectifiedGrid,
+    },
+    processingMs: geo.processingMs + api.processingMs,
+    metadata: {
+      ...api.metadata,
+      geometryOnly: false,
+      geometry_backend: geo.metadata?.geometry_backend ?? "canvas_fast",
+      local_geometry_ms: geo.processingMs,
+      api_geometry_backend: api.metadata?.geometry_backend,
+    },
+  };
 }
-
-export { START_FEN };

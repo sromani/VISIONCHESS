@@ -1,4 +1,5 @@
 import { base64ToDataUrl, apiFetch } from "@/lib/api/client";
+import { WARP_PREPROCESS } from "@/lib/config";
 import { BoardMatrixCell, DetectionDebug, DetectionResult, MlSquareDebug, SquareInfo } from "@/types";
 
 interface DetectBoardApiResponse {
@@ -41,6 +42,10 @@ interface DetectBoardApiResponse {
     final_board_base64?: string | null;
     grid_debug_extreme_base64?: string | null;
     dataset_squares_base64?: string | null;
+    rectified_grid_base64?: string | null;
+    corners_original_base64?: string | null;
+    corners_warped_base64?: string | null;
+    rectified_preprocessed_base64?: string | null;
   } | null;
   squares: {
     name: string;
@@ -80,6 +85,10 @@ function mapDebug(raw: DetectBoardApiResponse["debug"]): DetectionDebug | null {
     ["meshQuality", "mesh_quality_base64"],
     ["finalBoard", "final_board_base64"],
     ["gridDebugExtreme", "grid_debug_extreme_base64"],
+    ["rectifiedGrid", "rectified_grid_base64"],
+    ["cornersOriginal", "corners_original_base64"],
+    ["cornersWarped", "corners_warped_base64"],
+    ["rectifiedPreprocessed", "rectified_preprocessed_base64"],
   ];
   for (const [target, source] of map) {
     const b64 = raw[source];
@@ -117,13 +126,20 @@ export async function detectBoard(
   const form = new FormData();
   form.append("file", file);
 
-  const data = await apiFetch<DetectBoardApiResponse>(endpoint, {
+  const params = new URLSearchParams();
+  if (endpoint.includes("lc2fen") && WARP_PREPROCESS && WARP_PREPROCESS !== "none") {
+    params.set("warp_preprocess", WARP_PREPROCESS);
+  }
+  const qs = params.toString();
+  const url = qs ? `${endpoint}?${qs}` : endpoint;
+
+  const data = await apiFetch<DetectBoardApiResponse>(url, {
     method: "POST",
     body: form,
   });
 
-  if (!data.fen) {
-    throw new Error("Classification pipeline did not return a FEN");
+  if (!data.fen && !data.squares?.length) {
+    throw new Error("Classification pipeline did not return a FEN or square labels");
   }
 
   return {
@@ -138,7 +154,7 @@ export async function detectBoard(
       ? base64ToDataUrl(data.debug_montage_base64)
       : undefined,
     corners: data.corners,
-    fen: data.fen,
+    fen: data.fen ?? "",
     interactiveFen: data.interactive_fen,
     fenConfidence: data.fen_confidence ?? undefined,
     fenValid: data.fen_valid ?? undefined,

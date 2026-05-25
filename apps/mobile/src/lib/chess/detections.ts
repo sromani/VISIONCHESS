@@ -64,6 +64,53 @@ export function isOccupiedDetection(det: PieceDetection): boolean {
   return det.piece !== "empty" && det.piece !== "unknown";
 }
 
+import type { BoardMatrixCell, DetectionResult } from "@/types";
+
+export function detectionHasPieces(detection: DetectionResult): boolean {
+  const placement = (detection.interactiveFen ?? detection.fen ?? "").split(" ")[0];
+  if (placement && placement !== "8/8/8/8/8/8/8/8") return true;
+  if (detection.squares.some((s) => s.label && s.label !== "empty")) return true;
+  if (
+    detection.boardMatrix?.some((row) =>
+      row.some((c) => c.label && c.label !== "empty" && c.label !== "_"),
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function detectionsFromBoardMatrix(matrix: BoardMatrixCell[][]): PieceDetection[] {
+  const out: PieceDetection[] = [];
+  for (let rankIdx = 0; rankIdx < matrix.length; rankIdx += 1) {
+    const rank = 8 - rankIdx;
+    for (let fileIdx = 0; fileIdx < matrix[rankIdx].length; fileIdx += 1) {
+      const cell = matrix[rankIdx][fileIdx];
+      const square = `${FILES[fileIdx]}${rank}`;
+      const piece = cell.label === "_" ? "empty" : cell.label;
+      out.push({ square, piece, confidence: cell.confidence });
+    }
+  }
+  return out;
+}
+
+export function detectionsFromDetectionResult(detection: DetectionResult): PieceDetection[] {
+  if (detection.squares.length) {
+    return detectionsFromSquares(
+      detection.squares.map((sq) => ({
+        name: sq.name,
+        label: sq.label ?? "empty",
+        confidence: sq.confidence ?? 0,
+        occupied: sq.occupied,
+      })),
+    );
+  }
+  if (detection.boardMatrix?.length) {
+    return detectionsFromBoardMatrix(detection.boardMatrix);
+  }
+  return [];
+}
+
 export function detectionsFromSquares(
   squares: {
     squareName?: string;
