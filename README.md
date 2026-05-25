@@ -138,7 +138,7 @@ Both web and mobile run Stockfish in a **Web Worker** (no server):
 
 | Doc | Description |
 |-----|-------------|
-| [docs/architecture.md](docs/architecture.md) | System design |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [docs/vision-pipeline.md](docs/vision-pipeline.md) | Photo to FEN |
 | [docs/mobile.md](docs/mobile.md) | Capacitor builds |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes |
