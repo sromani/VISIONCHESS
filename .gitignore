@@ -1,0 +1,116 @@
+# ── Python ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+ml/visionchess_ml.egg-info/
+ml/ml/
+*.egg
+dist/
+build/
+htmlcov/
+.coverage
+coverage/
+
+# ── Node / frontend ──────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# Vite / Capacitor web build
+apps/mobile/dist/
+apps/web/.next/
+
+# Stockfish assets (copied on npm postinstall)
+apps/web/public/stockfish.js
+apps/web/public/stockfish.wasm
+apps/web/public/stockfish.wasm.js
+apps/mobile/public/stockfish.js
+apps/mobile/public/stockfish.wasm
+apps/mobile/public/stockfish.wasm.js
+
+# ── Environment & secrets ────────────────────────────
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.local.example
+apps/web/.env.local
+
+# ── ML weights (download separately — see ml/models/README.md) ──
+ml/models/**/*.pt
+ml/models/**/*.pth
+ml/models/**/*.onnx
+ml/models/**/*.engine
+ml/models/**/*.trt
+!ml/models/**/*.json
+!ml/models/**/*.yaml
+!ml/models/**/*.txt
+!ml/models/README.md
+
+# ── Uploads, temp, logs ──────────────────────────────
+uploads/
+tmp/
+temp/
+*.log
+logs/
+screenshots/
+debug/
+
+# ── Benchmark artifacts ──────────────────────────────
+benchmark/_tmp*/
+benchmark/results/
+benchmark/__MACOSX/
+
+# ── Android (Capacitor) ───────────────────────────────
+apps/mobile/android/.gradle/
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+apps/mobile/android/local.properties
+apps/mobile/android/captures/
+apps/mobile/android/.idea/
+apps/mobile/android/*.iml
+apps/mobile/android/app/src/main/assets/public/
+apps/mobile/android/app/src/main/assets/capacitor.config.json
+apps/mobile/android/app/src/main/assets/capacitor.plugins.json
+apps/mobile/android/capacitor-cordova-android-plugins/
+
+# ── iOS (Capacitor) ───────────────────────────────────
+apps/mobile/ios/App/build/
+apps/mobile/ios/App/Pods/
+apps/mobile/ios/App/output/
+apps/mobile/ios/App/App/public/
+apps/mobile/ios/DerivedData/
+apps/mobile/ios/**/xcuserdata/
+apps/mobile/ios/App/App/capacitor.config.json
+apps/mobile/ios/App/App/config.xml
+apps/mobile/ios/capacitor-cordova-ios-plugins/
+
+# ── Docker volumes ─────────────────────────────────────
+postgres_data/
+redis_data/
+uploads_data/
+
+# ── IDE & OS ───────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Experimental / local only ──────────────────────────
+*.local
+experimental/
+scratch/
