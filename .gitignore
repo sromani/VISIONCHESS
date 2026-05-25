@@ -65,6 +65,8 @@ temp/
 *.log
 logs/
 screenshots/
+!docs/screenshots/
+!docs/screenshots/**
 debug/
 
 # ── Benchmark artifacts ──────────────────────────────

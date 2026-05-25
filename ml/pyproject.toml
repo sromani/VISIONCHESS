@@ -1,0 +1,40 @@
+[project]
+name = "visionchess-ml"
+version = "0.1.0"
+description = "Chess square piece classifier — training and inference"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.5",
+    "torchvision>=0.20",
+    "numpy>=2.1",
+    "pillow>=11.0",
+    "onnx>=1.17",
+    "onnxscript>=0.1.0",
+    "onnxruntime>=1.20",
+    "tqdm>=4.67",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "python-chess>=1.999",
+    "opencv-python-headless>=4.10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.8"]
+
+[project.scripts]
+train-pieces = "training.cli:main"
+train-occupancy = "training.occupancy_cli:main"
+setup-pretrained = "scripts.setup_pretrained:main"
+import-dataset = "scripts.import_class_folder:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["training*", "inference*", "dataset*", "scripts*"]

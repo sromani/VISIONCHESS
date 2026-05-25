@@ -1,0 +1,31 @@
+{
+  "source": "yamero_yolo11n",
+  "model_type": "yolo_detector",
+  "image_size": 416,
+  "num_classes": 12,
+  "class_names": [
+    "white_pawn",
+    "white_knight",
+    "white_bishop",
+    "white_rook",
+    "white_queen",
+    "white_king",
+    "black_pawn",
+    "black_knight",
+    "black_bishop",
+    "black_rook",
+    "black_queen",
+    "black_king"
+  ],
+  "input_name": "images",
+  "output_name": "output0",
+  "skip_classes": [],
+  "localization_only": false,
+  "board_class_index": -1,
+  "coords_normalized": false,
+  "conf_threshold": 0.30,
+  "iou_threshold": 0.45,
+  "max_box_ratio": 0.32,
+  "min_box_px": 18,
+  "preprocess": "yolo_rgb_416"
+}

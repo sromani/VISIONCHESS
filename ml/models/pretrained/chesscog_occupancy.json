@@ -1,0 +1,13 @@
+{
+  "source": "chesscog",
+  "model": "ResNet18",
+  "image_size": 100,
+  "num_classes": 2,
+  "class_names": [
+    "empty",
+    "occupied"
+  ],
+  "input_name": "square",
+  "output_name": "logits",
+  "preprocess": "imagenet_normalize_rgb"
+}
